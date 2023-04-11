@@ -19,10 +19,6 @@ def stream_database():
         for line in proc.stdout:
             if line[0] == '#':
                 continue
-            if line.isspace():
-                continue
-            if ': ' not in line:
-                continue
             if line[0] == '&':
                 continue
             yield line.strip()
@@ -32,16 +28,23 @@ def build_graph(stream, **kwargs):
     """
     Build a dependency graph from the Makefile database.
     """
-
+    tool_fillcolor = "aliceblue"
+    file_fillcolor = "darkseagreen"
     graph = gv.Digraph(comment="Makefile")
     graph.attr(rankdir=kwargs.get('direction', 'TB'))
     for line in stream:
-        target, dependencies = line.split(':')
-
+        # stream_database will return empty lines and lines with no :
+        if ': ' not in line or line.isspace(): 
+            continue
+        list_token = line.split(':')
+        if len(list_token) != 2:
+            continue 
+        target, dependencies = tuple(list_token)
         # Draw all targets except .PHONY (it isn't really a target).
         if target != ".PHONY":
             graph.node(target)
-
+        add_cmd=False
+        cmd = next(stream) # Get the first command of this dependecy
         for dependency in dependencies.strip().split(' '):
             if dependency in ["default", "clean"]:
                 continue
@@ -50,8 +53,16 @@ def build_graph(stream, **kwargs):
             elif target in ["default"]:
                 graph.node(dependency, shape="rectangle")
             else:
-                graph.node(dependency, shape="rectangle")
-                graph.edge(target, dependency)
+                if cmd != "" and ':' not in cmd :
+                    add_cmd=True
+                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
+                    graph.edge(cmd, dependency, dir="back")
+                else:
+                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
+                    graph.edge(target, dependency, dir="back")
+        if add_cmd:
+            graph.node(cmd, shape="oval", fillcolor=file_fillcolor, style="filled")
+            graph.edge(target, cmd, dir="back")
 
     return graph
 
