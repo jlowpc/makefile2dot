@@ -50,4 +50,11 @@ python path:
 ````bash
 $ export PYTHONPATH=$(pwd)
 ````
-
+## Changes made with this fork
+-- Commands in the makefile is created in the graph
+-- Files are in blue rectangle, commands are in green rounded box
+-- Added 3 arguments: skip, replace, and map
+   skip: lines to be skipped processing in the makefile
+   replace: replace an node's name with mapping in replace (format: old --- new)
+   map: filenames with more than one level will be shortened and a map DOT file can be created
+-- 

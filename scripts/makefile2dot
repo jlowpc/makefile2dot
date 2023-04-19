@@ -17,7 +17,14 @@ PARSER.add_argument('--output', '-o', dest='output', default="",
 
 PARSER.add_argument('--view', '-v', action='store_true',
                     help="view the graph (disables output to stdout)")
+PARSER.add_argument('--skip', '-s', dest='skip_fn',
+                    help="file with lines to skip when streaming Makefile")
+PARSER.add_argument('--replace', '-r', dest='replace_fn',
+                    help="file with lines to search and replace when streaming Makefile")
+PARSER.add_argument('--map', '-m', dest='map_fn',
+                    help="filename will be shortend.  map is the output file of the mapping of filename")
 
 ARGS = PARSER.parse_args()
 
-makefile2dot(direction=ARGS.direction, output=ARGS.output, view=ARGS.view)
+makefile2dot(direction=ARGS.direction, output=ARGS.output, view=ARGS.view, 
+            skip=ARGS.skip_fn, replace=ARGS.replace_fn, map=ARGS.map_fn)
