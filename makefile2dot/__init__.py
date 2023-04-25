@@ -130,13 +130,13 @@ def build_graph(stream, **kwargs):
                 if cmd != "" and ':' not in cmd :
                     add_cmd=True
                     graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
-                    graph.edge(cmd, dependency, dir="back")
+                    graph.edge(dependency, cmd)
                 else:
                     graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
-                    graph.edge(target, dependency, dir="back")
+                    graph.edge(dependency, target)
         if add_cmd:
             graph.node(cmd, shape="box", fillcolor=file_fillcolor, style="filled, rounded")
-            graph.edge(target, cmd, dir="back")
+            graph.edge(cmd, target)
     if map_fn is not None and len(unique_fn_dict)>0:
         write_map(map_fn, unique_fn_dict)
     return graph
