@@ -17,7 +17,7 @@ def test_makefile():
 
     assert "digraph {" in result
     assert "\trankdir=TB" in result
-    assert '\t"output.png" [shape=rectangle]' in result
-    assert '\t".twine_checked" [shape=rectangle]' in result
-    assert '\t"output.dot" -> Makefile' in result
-    assert '\tdist -> ".twine_checked"' in result
+    assert '\t"output.png"' in result
+    assert '\t".twine_checked" [fillcolor=aliceblue shape=rectangle style=filled]' in result
+    assert '\t"output.dot" [fillcolor=aliceblue shape=rectangle style=filled]' in result
+    assert '\t".twine_checked" -> dist' in result
