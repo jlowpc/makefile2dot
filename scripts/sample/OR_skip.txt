@@ -1,0 +1,27 @@
+$(1) $(2) &: $(3)
+klayout_tech.lef
+klayout_wrap.lyt
+cp $< $@
+mkdir -p $(RESULTS_DIR) $(LOG_DIR) $(REPORTS_DIR)
+@mkdir -p $(OBJECTS_DIR)/lib
+$(UTILS_DIR)/markDontUse.py -p "$(DONT_USE_CELLS)" -i $^ -o $@
+versions.txt
+klayout_tr_rpt
+klayout_guides
+$(call KLAYOUT_FOUND)
+KLAYOUT_CMD
+clean_all
+handoff
+gui_final
+gui_floorplan
+gui_route
+gui_cts
+gui_place
+nuke
+generate_abstract
+@printf "%-25s %10s\n" Log "Elapsed seconds"
+-@$(UTILS_DIR)/genElapsedTime.py -d "$(LOG_DIR)"
+cp $^ $@
+skip_cts
+skip_route
+all
