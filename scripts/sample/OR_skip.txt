@@ -24,4 +24,6 @@ generate_abstract
 cp $^ $@
 skip_cts
 skip_route
+skip_resize
+ln -sf $(shell realpath --relative-to=$(dir $@) $<) $@
 all
