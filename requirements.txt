@@ -6,7 +6,7 @@ chardet==3.0.4
 coverage==5.0.4
 cryptography==2.9
 docutils==0.16
-graphviz==0.14
+graphviz
 idna==2.9
 importlib-metadata==1.6.0
 jeepney==0.4.3
