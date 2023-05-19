@@ -24,10 +24,13 @@ def create_cmd_only(**kwargs):
     for s in graph:
         m1 = cmd_pattern.search(s)
         if m1:
-            cmd_dict[m1.group(1).strip().strip('"')] = 1
+            ss = m1.group(1).strip().strip('"').strip()
+            cmd_dict[ss] = 1
         m2 = edge_pattern.search(s)
         if m2:
-            tree_dict[m2.group(1).strip().strip('"')].append(m2.group(2).strip().strip('"'))
+            s1 = m2.group(1).strip().strip('"').strip()
+            s2 = m2.group(2).strip().strip('"').strip()
+            tree_dict[s1].append(s2)
     for key, values in cmd_dict.items():
         #print(f"processing {key}")
         already_done = {}
