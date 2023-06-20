@@ -15,17 +15,29 @@ def subgraph(**kwargs):
     graph2 = gv.Digraph(comment="Subgraph", 
                         node_attr={'style': 'rounded'}, 
                         edge_attr={'minlen' : '2'}, strict=True)
-    sg_name = {'cluster_1' : 'synthesize', 
-               'cluster_2' : 'floorplan', 
-               'cluster_3' : 'place', 
-               'cluster_4' : 'cts', 
-               'cluster_5' : 'route', 
-               'cluster_6' : 'finish'}
-    
+    sg_name = {'cluster_1' : '1. synthesize', 
+               'cluster_2' : '2. floorplan', 
+               'cluster_3' : '3. place', 
+               'cluster_4' : '4. cts', 
+               'cluster_5' : '5. route', 
+               'cluster_6' : '6. finish'}
+    sg_color = {'cluster_1' : 'darkgreen', 
+               'cluster_2' : 'aquamarine3', 
+               'cluster_3' : 'gold', 
+               'cluster_4' : 'orange', 
+               'cluster_5' : 'crimson', 
+               'cluster_6' : 'drakred'}
     for i in range(6):
         sg.append(gv.Digraph(name=f'cluster_{i+1}', 
                              node_attr={'shape': 'box'}, 
-                             graph_attr={'label' :  sg_name[f'cluster_{i+1}']}))
+                             graph_attr={'label' :  sg_name[f'cluster_{i+1}'], 
+                                         'style' : 'filled',
+                                         'color' : sg_color[f'cluster_{i+1}'], 
+                                         'fillcolor' : 'darkgray:gold',
+                                         'gradientangle' : '0',
+                                         'fontsize' : '30pt',
+                                         'page'='8.5,11',
+                             }))
     for s in graph:
         m1 = edge_pattern.search(s)
         if m1:
