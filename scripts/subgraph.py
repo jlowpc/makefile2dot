@@ -36,7 +36,7 @@ def subgraph(**kwargs):
                                          'fillcolor' : 'darkgray:gold',
                                          'gradientangle' : '0',
                                          'fontsize' : '30pt',
-                                         'page'='8.5,11',
+                                         'page' : '8.5,11',
                              }))
     for s in graph:
         m1 = edge_pattern.search(s)
