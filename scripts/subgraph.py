@@ -26,7 +26,7 @@ def subgraph(**kwargs):
                'cluster_3' : 'gold', 
                'cluster_4' : 'orange', 
                'cluster_5' : 'crimson', 
-               'cluster_6' : 'drakred'}
+               'cluster_6' : 'darkred'}
     for i in range(6):
         sg.append(gv.Digraph(name=f'cluster_{i+1}', 
                              node_attr={'shape': 'box'}, 
