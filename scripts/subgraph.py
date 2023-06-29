@@ -5,6 +5,7 @@ from collections import defaultdict
 def subgraph(**kwargs):
     output = kwargs.get('output', '')
     view = kwargs.get('view', False)
+    remove = ['floorplan', 'cts', 'place', 'route', 'finish']
     edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
     node_pattern = re.compile('"?(.*)"? \[(.*)\]')
     num_pattern = re.compile('([1-6])_.+')
@@ -43,10 +44,20 @@ def subgraph(**kwargs):
         if m1:
             s1 = m1.group(1).strip().strip('"').strip()
             s2 = m1.group(2).strip().strip('"').strip()
+            if s2 in remove:
+                continue
             m2 = num_pattern.search(s1)
             if m2:
                 i = int(m2.group(1))-1
-                sg[i].edge(s1, s2)
+                m3 = num_pattern.search(s2)
+                if m3:
+                    j = int(m3.group(1))-1
+                    if i!=j:
+                        graph2.edge(s1, s2)
+                    else:
+                        sg[i].edge(s1, s2)
+                else:
+                    sg[i].edge(s1, s2)
             else:
                 m2 = num_pattern.search(s2)
                 if m2:
@@ -66,6 +77,10 @@ def subgraph(**kwargs):
                     d = {}
                     if s2 != "":
                         d = dict(x.split("=") for x in s2.split())
+                    mm = num_pattern.search(s1)
+                    if mm:
+                        i = int(mm.group(1))-1
+                        sg[i].node(s1, **d)
                     graph2.node(s1, **d) 
 
     for i in range(6):
