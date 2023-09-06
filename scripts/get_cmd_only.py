@@ -7,6 +7,7 @@ def create_cmd_only(**kwargs):
     view = kwargs.get('view', False)
     skip=kwargs.get('skip')
     cmd_pattern = re.compile('"?(.*)"? \[fillcolor=darkseagreen shape=box style="filled, rounded"\]')
+    cmd_pattern2 = re.compile('"?(.*)"? \[fillcolor=orangered shape=box style="filled, rounded"\]')
     edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
     graph = gv.Digraph()
     with open(kwargs.get('input')) as dot:
@@ -22,7 +23,7 @@ def create_cmd_only(**kwargs):
                 skip_dict[m.group(1).strip().strip('"')].append(m.group(2).strip().strip('"'))
     cmd_graph = gv.Digraph(comment="Command map", node_attr={'style': 'rounded'}, edge_attr={'minlen' : '2'}, strict=True)
     for s in graph:
-        m1 = cmd_pattern.search(s)
+        m1 = cmd_pattern.search(s) or cmd_pattern2.search(s)
         if m1:
             ss = m1.group(1).strip().strip('"').strip()
             cmd_dict[ss] = 1
@@ -32,14 +33,12 @@ def create_cmd_only(**kwargs):
             s2 = m2.group(2).strip().strip('"').strip()
             tree_dict[s1].append(s2)
     for key, values in cmd_dict.items():
-        #print(f"processing {key}")
         already_done = {}
         for item in tree_dict[key]:
             next_list.append(item)
         while (len(next_list) > 0):
             item = next_list.pop()
             if item in cmd_dict:
-                #print(f"found one {key} -> {item}")
                 add=True
                 if key in skip_dict:
                     for i in skip_dict[key]:
@@ -47,7 +46,10 @@ def create_cmd_only(**kwargs):
                             add=False
                             break
                 if add:
-                    cmd_graph.node(key, shape="box", fillcolor="darkseagreen", style="filled, rounded")
+                    if key == "yosys":
+                        cmd_graph.node(key, shape="box", fillcolor="orangered", style="filled, rounded")
+                    else:
+                        cmd_graph.node(key, shape="box", fillcolor="darkseagreen", style="filled, rounded")
                     cmd_graph.node(item, shape="box", fillcolor="darkseagreen", style="filled, rounded")
                     cmd_graph.edge(key, item)
             else: 

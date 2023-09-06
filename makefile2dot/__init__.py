@@ -85,6 +85,7 @@ def build_graph(stream, **kwargs):
     """
     tool_fillcolor = "aliceblue"
     file_fillcolor = "darkseagreen"
+    file_fillcolor2 = "orangered"
     unique_fn_dict = {}
     graph = gv.Digraph(comment="Makefile", node_attr={'style': 'rounded'}, strict=True)
     graph.attr(rankdir=kwargs.get('direction', 'TB'))
@@ -135,7 +136,10 @@ def build_graph(stream, **kwargs):
                     graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
                     graph.edge(dependency, target)
         if add_cmd:
-            graph.node(cmd, shape="box", fillcolor=file_fillcolor, style="filled, rounded")
+            if cmd == " yosys":
+                graph.node(cmd, shape="box", fillcolor=file_fillcolor2, style="filled, rounded")
+            else:
+                graph.node(cmd, shape="box", fillcolor=file_fillcolor, style="filled, rounded")
             graph.edge(cmd, target)
     if map_fn is not None and len(unique_fn_dict)>0:
         write_map(map_fn, unique_fn_dict)
