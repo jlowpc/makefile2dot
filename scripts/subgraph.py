@@ -1,21 +1,25 @@
 import graphviz as gv
 import re as re
+import pydot
 from collections import defaultdict
 
 def subgraph(**kwargs):
     output = kwargs.get('output', '')
     view = kwargs.get('view', False)
+    add_fn = kwargs.get('add')
     remove = ['floorplan', 'cts', 'place', 'route', 'finish']
     edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
     node_pattern = re.compile('"?(.*)"? \[(.*)\]')
     num_pattern = re.compile('([1-6])_.+')
-    graph = gv.Digraph()
     sg = []
-    with open(kwargs.get('input')) as dot:
-        graph = gv.Source(dot.read())
-    graph2 = gv.Digraph(comment="Subgraph", 
-                        node_attr={'style': 'rounded'}, 
-                        edge_attr={'minlen' : '2'}, strict=True)
+
+    new_graph = pydot.Dot('', graph_type='digraph', strict=True) 
+    new_graph.set_node_defaults(style='rounded')
+    new_graph.set_edge_defaults(minlen='2')
+
+    #graph2 = gv.Digraph(comment="Subgraph", 
+    #                    node_attr={'style': 'rounded'}, 
+    #                    edge_attr={'minlen' : '2'}, strict=True)
     sg_name = {'cluster_1' : '1. synthesize', 
                'cluster_2' : '2. floorplan', 
                'cluster_3' : '3. place', 
@@ -29,73 +33,73 @@ def subgraph(**kwargs):
                'cluster_5' : 'crimson', 
                'cluster_6' : 'darkred'}
     for i in range(6):
-        sg.append(gv.Digraph(name=f'cluster_{i+1}', 
-                             node_attr={'shape': 'box'}, 
-                             graph_attr={'label' :  sg_name[f'cluster_{i+1}'], 
-                                         'style' : 'filled',
-                                         'color' : sg_color[f'cluster_{i+1}'], 
-                                         'fillcolor' : 'darkgray:gold',
-                                         'gradientangle' : '0',
-                                         'fontsize' : '30pt',
-                                         'page' : '8.5,11',
-                             }))
-    for s in graph:
-        m1 = edge_pattern.search(s)
-        if m1:
-            s1 = m1.group(1).strip().strip('"').strip()
-            s2 = m1.group(2).strip().strip('"').strip()
-            if s2 in remove:
-                continue
-            m2 = num_pattern.search(s1)
+        h = pydot.Subgraph(f'cluster_{i+1}') 
+        h.set_node_defaults(shape='box')
+        h.set_graph_defaults(label=sg_name[f'cluster_{i+1}'], 
+                             style = 'filled',
+                             color = sg_color[f'cluster_{i+1}'], 
+                             fillcolor = '\"darkgray:gold\"',
+                             gradientangle = '0',
+                             fontsize = '30pt',
+                             page = '8.5,11')
+        new_graph.add_subgraph(h)
+
+    graphs = pydot.graph_from_dot_file(kwargs.get('input'))
+    graph = graphs[0]
+  
+    for edge in graph.get_edges():
+        s1 = edge.get_source()
+        s2 = edge.get_destination()
+        if s2 in remove:
+            continue
+        m2 = num_pattern.search(s1)
+        if m2:
+            i = int(m2.group(1))-1
+            m3 = num_pattern.search(s2)
+            e = pydot.Edge(s1, s2)
+            if m3:
+                j = int(m3.group(1))-1
+                if i!=j:
+                    new_graph.add_edge(e)
+                else:
+                    g = new_graph.get_subgraph(f'cluster_{i+1}')
+                    g[0].add_edge(e)
+            else:
+                g = new_graph.get_subgraph(f'cluster_{i+1}')
+                g[0].add_edge(e)
+        else:
+            m2 = num_pattern.search(s2)
+            e = pydot.Edge(s1, s2)
             if m2:
                 i = int(m2.group(1))-1
-                m3 = num_pattern.search(s2)
-                if m3:
-                    j = int(m3.group(1))-1
-                    if i!=j:
-                        graph2.edge(s1, s2)
-                    else:
-                        sg[i].edge(s1, s2)
-                else:
-                    sg[i].edge(s1, s2)
+                g = new_graph.get_subgraph(f'cluster_{i+1}')
+                g[0].add_edge(e)
             else:
-                m2 = num_pattern.search(s2)
-                if m2:
-                    i = int(m2.group(1))-1
-                    sg[i].edge(s1, s2)
-                else:
-                    graph2.edge(s1, s2)
-        else:
-            m1 = node_pattern.search(s)
-            if m1:
-                s1 = m1.group(1).strip().strip('"').strip()
-                if s1 != 'node':
-                    s2 = m1.group(2).strip()
-                    for quoted_part in re.findall(r'\"(.+?)\"', s2):
-                        s2 = s2.replace(quoted_part, quoted_part.replace(" ", ""))
-                    s2 = s2.replace('"', '')
-                    d = {}
-                    if s2 != "":
-                        d = dict(x.split("=") for x in s2.split())
-                    mm = num_pattern.search(s1)
-                    if mm:
-                        i = int(mm.group(1))-1
-                        sg[i].node(s1, **d)
-                    graph2.node(s1, **d) 
+                new_graph.add_edge(e)
 
-    for i in range(6):
-        graph2.subgraph(sg[i]) 
+    for node in graph.get_nodes():
+        s1 = node.get_name()
+        attr = node.get_attributes()
+        s1 = s1.strip().strip('"').strip()
+        if s1 != 'node' and s1 not in remove:
+            mm = num_pattern.search(s1)
+            nn = pydot.Node(name=s1, **attr)
+            if mm:
+                i = int(mm.group(1))-1
+                g = new_graph.get_subgraph(f'cluster_{i+1}')
+                g[0].add_node(nn)
+            new_graph.add_node(nn)
 
     if output == "":
        if view:
-           graph2.view()
+           new_graph.view()
        else:
-           print(graph2)
+           print(new_graph)
     else:
        with open(output, 'w') as file:
-           file.write(str(graph2))
+           file.write(str(new_graph))
        if view:
-           graph2.view()
+           new_graph.view()
 
 import argparse
 
@@ -111,6 +115,9 @@ PARSER.add_argument('--output', '-o', dest='output', default="",
 PARSER.add_argument('--view', '-v', action='store_true',
                             help="view the graph (disables output to stdout)")
 
+PARSER.add_argument('--add', '-a', dest='add_fn',
+                    help="file with lines to add a table or edges to graph")
+
 ARGS = PARSER.parse_args()
 
-subgraph(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view)
+subgraph(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view, add=ARGS.add_fn)
