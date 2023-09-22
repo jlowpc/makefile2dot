@@ -1,0 +1,11 @@
+TABLE===openroad global_route.tcl===FastRoute
+TABLE===openroad detail_route.tcl===TritonRoute
+TABLE===openroad final_report.tcl===OpenRCX,OpenSTA,PDNSim
+TABLE===openroad tdms_place.tcl===RePlAce
+TABLE===openroad macro_place.tcl===TritonMacroPlacer
+TABLE===openroad global_place.tcl===RePlAce
+TABLE===openroad detail_place.tcl===OpenDP
+TABLE===openroad cts.tcl===Triton CTS 2.0
+TABLE===openroad global_place_skip_io.tcl===RePlAce
+TABLE===drc===KLayout
+TABLE===lvs===KLayout
