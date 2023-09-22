@@ -78,6 +78,34 @@ def stream_database():
                 continue
             yield line.strip()
 
+def get_label(add_table_dict, k):
+    if add_table_dict is None:
+        return None
+    if k not in add_table_dict.keys():
+        return None
+    #print(f"{k} {add_table_dict[k]}")
+    vs = add_table_dict[k]
+    cell = ""
+    for v in vs:
+        cell += f"<tr> <td bgcolor=\"orangered\" align=\"left\" >{v}</td> </tr>" 
+    label = f"<<table border=\"0\" cellborder=\"1\" cellspacing=\"0\" cellpadding=\"4\"> <tr> <td> <b>{k}</b> </td> </tr> <tr> <td> <table border=\"0\" cellborder=\"0\" cellspacing=\"0\"> {cell}</table></td> </tr></table>>"
+    return label
+
+def get_add_tables(add_fn):
+    add_edges_list = []
+    add_table_dict = {}
+    if add_fn is not None:
+        with open(add_fn) as f:
+            for line in f:
+                line = line.strip()
+                (t, k, v) = line.split('===')
+                if t=='TABLE':
+                    cells = v.split(',')
+                    add_table_dict[k] = cells
+                if t=='EDGES':
+                    tt = (k, v)
+                    add_edges_list.append(tt)
+    return(add_edges_list, add_table_dict)
 
 def build_graph(stream, **kwargs):
     """
@@ -85,13 +113,16 @@ def build_graph(stream, **kwargs):
     """
     tool_fillcolor = "aliceblue"
     file_fillcolor = "darkseagreen"
-    file_fillcolor2 = "orangered"
+    bigtool_fillcolor2 = "orangered"
+    bigtool = ['yosys', 'drc', 'lvs']
     unique_fn_dict = {}
     graph = gv.Digraph(comment="Makefile", node_attr={'style': 'rounded'}, strict=True)
     graph.attr(rankdir=kwargs.get('direction', 'TB'))
     skip_line_list = kwargs.get('skip_line')
     replace_dict = kwargs.get('replace_dict')
     map_fn = kwargs.get('map')
+    add_edges_list = kwargs.get('add_edge')
+    add_table_dict = kwargs.get('add_table')
     for line in stream:
         # stream_database will return empty lines and lines with no :
         if is_skip_line(line, skip_line_list): 
@@ -106,7 +137,11 @@ def build_graph(stream, **kwargs):
         
         # Draw all targets except .PHONY (it isn't really a target).
         if target != ".PHONY":
-            graph.node(target)
+            label = get_label(add_table_dict, target) 
+            if target in bigtool:
+                graph.node(target, shape="box", fillcolor=bigtool_fillcolor2, style="filled, rounded", label=label)
+            else:
+                graph.node(target)
         add_cmd=False
         cmd = next(stream) # Get the first command of this dependecy
         if is_skip_line(cmd, skip_line_list): 
@@ -130,19 +165,25 @@ def build_graph(stream, **kwargs):
             else:
                 if cmd != "" and ':' not in cmd :
                     add_cmd=True
-                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
+                    label = get_label(add_table_dict, dependency) 
+                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled", label=label)
                     graph.edge(dependency, cmd)
                 else:
-                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled")
+                    label = get_label(add_table_dict, dependency) 
+                    graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled", label=label)
                     graph.edge(dependency, target)
         if add_cmd:
-            if cmd == " yosys":
-                graph.node(cmd, shape="box", fillcolor=file_fillcolor2, style="filled, rounded")
+            label = get_label(add_table_dict, cmd) 
+            if cmd in bigtool:
+                graph.node(cmd, shape="box", fillcolor=bigtool_fillcolor2, style="filled, rounded", label=label)
             else:
-                graph.node(cmd, shape="box", fillcolor=file_fillcolor, style="filled, rounded")
+                graph.node(cmd, shape="box", fillcolor=file_fillcolor, style="filled, rounded", label=label)
             graph.edge(cmd, target)
     if map_fn is not None and len(unique_fn_dict)>0:
         write_map(map_fn, unique_fn_dict)
+    if add_edges_list is not None:
+        for et in add_edges_list:
+            graph.edge(et[0], et[1])
     return graph
 
 
@@ -150,7 +191,6 @@ def makefile2dot(**kwargs):
     """
     Visualize a Makefile as a Graphviz graph.
     """
-
     direction = kwargs.get('direction', "BT")
     if direction not in ["LR", "RL", "BT", "TB"]:
         raise ValueError('direction must be one of "BT", "TB", "LR", RL"')
@@ -160,6 +200,7 @@ def makefile2dot(**kwargs):
     skip = kwargs.get('skip')
     replace = kwargs.get('replace')
     map_fn = kwargs.get('map')
+    add_fn = kwargs.get('add')
     
     line_list = []
     replace_dict = {}
@@ -170,10 +211,14 @@ def makefile2dot(**kwargs):
     if replace is not None:
         with open(replace) as f:
             for line in f: 
+                line = line.strip()
                 (k, v) = line.split('===')
                 replace_dict[k.rstrip()] = v.rstrip()
 
-    graph = build_graph(stream_database(), direction=direction, skip_line=line_list, replace_dict=replace_dict, map=map_fn)
+    add_edges_list, add_table_dict = get_add_tables(add_fn)
+
+    graph = build_graph(stream_database(), direction=direction, skip_line=line_list, replace_dict=replace_dict, map=map_fn,
+                        add_edge=add_edges_list, add_table=add_table_dict)
     if output == "":
         if view:
             graph.view()
