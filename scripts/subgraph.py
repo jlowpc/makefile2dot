@@ -6,7 +6,6 @@ from collections import defaultdict
 def subgraph(**kwargs):
     output = kwargs.get('output', '')
     view = kwargs.get('view', False)
-    add_fn = kwargs.get('add')
     remove = ['floorplan', 'cts', 'place', 'route', 'finish']
     edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
     node_pattern = re.compile('"?(.*)"? \[(.*)\]')
@@ -17,9 +16,6 @@ def subgraph(**kwargs):
     new_graph.set_node_defaults(style='rounded')
     new_graph.set_edge_defaults(minlen='2')
 
-    #graph2 = gv.Digraph(comment="Subgraph", 
-    #                    node_attr={'style': 'rounded'}, 
-    #                    edge_attr={'minlen' : '2'}, strict=True)
     sg_name = {'cluster_1' : '1. synthesize', 
                'cluster_2' : '2. floorplan', 
                'cluster_3' : '3. place', 
@@ -115,9 +111,6 @@ PARSER.add_argument('--output', '-o', dest='output', default="",
 PARSER.add_argument('--view', '-v', action='store_true',
                             help="view the graph (disables output to stdout)")
 
-PARSER.add_argument('--add', '-a', dest='add_fn',
-                    help="file with lines to add a table or edges to graph")
-
 ARGS = PARSER.parse_args()
 
-subgraph(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view, add=ARGS.add_fn)
+subgraph(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view)

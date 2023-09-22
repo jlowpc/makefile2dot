@@ -6,27 +6,14 @@ import pydot
 def create_cmd_only(**kwargs):
     output = kwargs.get('output', '')
     view = kwargs.get('view', False)
-    skip=kwargs.get('skip')
     add_fn=kwargs.get('add')
-    #cmd_pattern = re.compile('"?(.*)"? \[fillcolor=darkseagreen shape=box style="filled, rounded"\]')
-    #cmd_pattern2 = re.compile('"?(.*)"? \[fillcolor=orangered shape=box style="filled, rounded"\]')
-    #cmd_pattern3 = re.compile('"?(.*)"? (\[label.*)"')
-    #edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
     graphs = pydot.graph_from_dot_file(kwargs.get('input'))
     graph = graphs[0]
 
     cmd_dict = {}
     next_list = []
     tree_dict = defaultdict(list)
-    skip_dict = defaultdict(list)
     
-    if skip is not None:
-        with open(skip) as f:
-            for line in f: 
-                line = line.strip()
-                m = edge_pattern.search(line)
-                skip_dict[m.group(1).strip().strip('"')].append(m.group(2).strip().strip('"'))
-
     cmd_graph = pydot.Dot('Command map', graph_type='digraph', strict=True) 
     cmd_graph.set_node_defaults(style='rounded')
     cmd_graph.set_edge_defaults(minlen='2')
@@ -50,21 +37,14 @@ def create_cmd_only(**kwargs):
         while (len(next_list) > 0):
             item = next_list.pop()
             if item in cmd_dict:
-                add=True
-                if key in skip_dict:
-                    for i in skip_dict[key]:
-                        if (i==item):
-                            add=False
-                            break
-                if add:
-                    n1 = graph.get_node(item)[0]
-                    n2 = graph.get_node(key)[0]
-                    #nn1 = pydot.Node(name=item, **(n1.get_attributes()))
-                    #nn2 = pydot.Node(name=key, **(n2.get_attributes()))
-                    e = pydot.Edge(key, item)
-                    cmd_graph.add_node(n1) 
-                    cmd_graph.add_node(n2)
-                    cmd_graph.add_edge(e)
+                n1 = graph.get_node(item)[0]
+                n2 = graph.get_node(key)[0]
+                #nn1 = pydot.Node(name=item, **(n1.get_attributes()))
+                #nn2 = pydot.Node(name=key, **(n2.get_attributes()))
+                e = pydot.Edge(key, item)
+                cmd_graph.add_node(n1) 
+                cmd_graph.add_node(n2)
+                cmd_graph.add_edge(e)
             else: 
                 if item not in already_done:
                     next_list.append(item)
@@ -98,12 +78,9 @@ PARSER.add_argument('--output', '-o', dest='output', default="",
 PARSER.add_argument('--view', '-v', action='store_true',
                             help="view the graph (disables output to stdout)")
 
-PARSER.add_argument('--skip', '-s',dest='skip',
-                            help="skip edges to be included in graph")
-
 PARSER.add_argument('--add', '-a', dest='add_fn',
                     help="file with lines to add a table or edges to graph")
 
 ARGS = PARSER.parse_args()
 
-create_cmd_only(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view, skip=ARGS.skip, add=ARGS.add_fn)
+create_cmd_only(input=ARGS.input, direction=ARGS.direction, output=ARGS.output, view=ARGS.view, add=ARGS.add_fn)
