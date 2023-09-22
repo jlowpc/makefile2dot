@@ -1,46 +1,48 @@
 import graphviz as gv
 import re as re
 from collections import defaultdict
-from makefile2dot import get_label, get_add_tables
+import pydot
 
 def create_cmd_only(**kwargs):
-    bigtool = ['yosys', 'drc', 'lvs']
     output = kwargs.get('output', '')
     view = kwargs.get('view', False)
     skip=kwargs.get('skip')
     add_fn=kwargs.get('add')
-    cmd_pattern = re.compile('"?(.*)"? \[fillcolor=darkseagreen shape=box style="filled, rounded"\]')
-    cmd_pattern2 = re.compile('"?(.*)"? \[fillcolor=orangered shape=box style="filled, rounded"\]')
-    cmd_pattern3 = re.compile('"?(.*)"? (\[label.*)"')
-    edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
-    graph = gv.Digraph()
-    with open(kwargs.get('input')) as dot:
-        graph = gv.Source(dot.read())
+    #cmd_pattern = re.compile('"?(.*)"? \[fillcolor=darkseagreen shape=box style="filled, rounded"\]')
+    #cmd_pattern2 = re.compile('"?(.*)"? \[fillcolor=orangered shape=box style="filled, rounded"\]')
+    #cmd_pattern3 = re.compile('"?(.*)"? (\[label.*)"')
+    #edge_pattern = re.compile('"?(.*)"? -> "?(.*)"?')
+    graphs = pydot.graph_from_dot_file(kwargs.get('input'))
+    graph = graphs[0]
+
     cmd_dict = {}
     next_list = []
     tree_dict = defaultdict(list)
     skip_dict = defaultdict(list)
-    add_edges_list, add_table_dict = get_add_tables(add_fn)
+    
     if skip is not None:
         with open(skip) as f:
             for line in f: 
+                line = line.strip()
                 m = edge_pattern.search(line)
                 skip_dict[m.group(1).strip().strip('"')].append(m.group(2).strip().strip('"'))
 
-    cmd_graph = gv.Digraph(comment="Command map", node_attr={'style': 'rounded'}, edge_attr={'minlen' : '2'}, strict=True)
-    for s in graph:
-        #search = re.search(r'(\[.*?\s\])(?=\s|$)', file)
-        m1 = cmd_pattern.search(s) or cmd_pattern2.search(s) or cmd_pattern3.search(s)
-        if m1:
-            ss = m1.group(1).strip().strip('"').strip()
-            #print(f"Added command {ss}")
-            cmd_dict[ss] = 1
-        m2 = edge_pattern.search(s)
-        if m2:
-            s1 = m2.group(1).strip().strip('"').strip()
-            s2 = m2.group(2).strip().strip('"').strip()
-            #print(f"{s1} -> {s2}")
-            tree_dict[s1].append(s2)
+    cmd_graph = pydot.Dot('Command map', graph_type='digraph', strict=True) 
+    cmd_graph.set_node_defaults(style='rounded')
+    cmd_graph.set_edge_defaults(minlen='2')
+
+    for node in graph.get_nodes():
+        s1 = node.get_name()
+        attr = node.get_attributes()
+        if 'fillcolor' in attr:
+            if attr['fillcolor'] == 'darkseagreen' or attr['fillcolor'] == 'orangered':
+                cmd_dict[s1] = 1
+
+    for edge in graph.get_edges():
+        s1 = edge.get_source()
+        s2 = edge.get_destination()
+        tree_dict[s1].append(s2)
+
     for key, values in cmd_dict.items():
         already_done = {}
         for item in tree_dict[key]:
@@ -55,17 +57,14 @@ def create_cmd_only(**kwargs):
                             add=False
                             break
                 if add:
-                    label_key = get_label(add_table_dict, key)
-                    label_item = get_label(add_table_dict, item)
-                    if key in bigtool:
-                        cmd_graph.node(key, shape="box", fillcolor="orangered", style="filled, rounded", label=label_key)
-                    else:
-                        cmd_graph.node(key, shape="box", fillcolor="darkseagreen", style="filled, rounded", label=label_key)
-                    if item in bigtool:
-                        cmd_graph.node(item, shape="box", fillcolor="orangered", style="filled, rounded", label=label_item)
-                    else:
-                        cmd_graph.node(item, shape="box", fillcolor="darkseagreen", style="filled, rounded", label=label_item)
-                    cmd_graph.edge(key, item)
+                    n1 = graph.get_node(item)[0]
+                    n2 = graph.get_node(key)[0]
+                    #nn1 = pydot.Node(name=item, **(n1.get_attributes()))
+                    #nn2 = pydot.Node(name=key, **(n2.get_attributes()))
+                    e = pydot.Edge(key, item)
+                    cmd_graph.add_node(n1) 
+                    cmd_graph.add_node(n2)
+                    cmd_graph.add_edge(e)
             else: 
                 if item not in already_done:
                     next_list.append(item)
