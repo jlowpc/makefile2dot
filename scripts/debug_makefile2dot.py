@@ -239,3 +239,30 @@ def makefile2dot(**kwargs):
             file.write(str(graph))
         if view:
             graph.view()
+
+
+import argparse
+
+DESC = "Create a dot graph of a Makefile."
+PARSER = argparse.ArgumentParser(description=DESC)
+PARSER.add_argument('--direction', '-d', dest='direction', default="BT",
+                    help="direction to draw graph ('BT', 'TB', 'LR', or 'RL')")
+
+PARSER.add_argument('--output', '-o', dest='output', default="",
+                    help="output file name (default: stdout).")
+
+PARSER.add_argument('--view', '-v', action='store_true',
+                    help="view the graph (disables output to stdout)")
+PARSER.add_argument('--skip', '-s', dest='skip_fn',
+                    help="file with lines to skip when streaming Makefile")
+PARSER.add_argument('--replace', '-r', dest='replace_fn',
+                    help="file with lines to search and replace when streaming Makefile")
+PARSER.add_argument('--add', '-a', dest='add_fn',
+                    help="file with lines to add a table or edges to graph")
+PARSER.add_argument('--map', '-m', dest='map_fn',
+                    help="filename will be shortend.  map is the output file of the mapping of filename")
+
+ARGS = PARSER.parse_args()
+
+makefile2dot(direction=ARGS.direction, output=ARGS.output, view=ARGS.view,
+            skip=ARGS.skip_fn, replace=ARGS.replace_fn, add=ARGS.add_fn, map=ARGS.map_fn)

@@ -1,29 +1,125 @@
-$(1) $(2) &: $(3)
-klayout_tech.lef
-klayout_wrap.lyt
-cp $< $@
-mkdir -p $(RESULTS_DIR) $(LOG_DIR) $(REPORTS_DIR)
-@mkdir -p $(OBJECTS_DIR)/lib
-$(UTILS_DIR)/markDontUse.py -p "$(DONT_USE_CELLS)" -i $^ -o $@
-versions.txt
+$(YOSYS_CMD)
+cp.*
+grep.*
+touch.*
+do-route
+mkdir.*
+gallery
+echo.*
+klayout
+gui_5_route.odb
+5_route.v
+do-klayout_wrap
+open_6_final.odb
 klayout_tr_rpt
-klayout_guides
-$(call KLAYOUT_FOUND)
-KLAYOUT_CMD
+gui_4_cts.odb
+build_macros
+open_5_route.odb
+.SECONDEXPANSION
+private.mk
+open_4_cts.odb
+.DEFAULT
+5_route.def
+6_net_rc.csv
+bash
+sky130_fd_sc_hd.gds
+settings.mk
+.*config.mk.*
+route.guide
+Makefile
+utils.mk
+/home/joanne/LOCAL/OpenROAD-flow-scripts/flow/platforms/sky130hd/sky130hd.lyt:
+.PHONY.*
+$(RESULTS_DIR)/$(1)$(if $(4),$(4),.odb): $(RESULTS_DIR)/$(2) $(3)
+do-$(1)$(if $(4),$(4),):
+$(if $(5),$(5),$(RESULTS_DIR))/$(1)$(if $(4),$(4),.odb): $(2)
+do-$(1):
+$(1) $(2) &:
+print-%
+test-unset-and-make-%
 clean_all
 handoff
-gui_final
-gui_floorplan
-gui_route
-gui_cts
+all_defs
+all_verilog
+open_floorplan
+open_route
+open_cts
+open_place
 gui_place
 nuke
-generate_abstract
-@printf "%-25s %10s\n" Log "Elapsed seconds"
--@$(UTILS_DIR)/genElapsedTime.py -d "$(LOG_DIR)"
-cp $^ $@
+gui_6_final.odb
+open_final
+gui_floorplan
+do-final
+gui_route
+gui_cts
+versions.txt
+clean_place
+clean_metadata
+clean_abstract
+clean_finish
+clean_issues
+clean_resize
+clean_floorplan
+clean_test
+clean_synth
+clean_cts
+clean_route
+update_ok
+open_synth
+gui_synth
+elapsed
+correlate_platform_rc
+command
+update_rules_force
+do-4_cts
+convert_rve
+correlate_rc
+write_net_rc
+convert_rve
+clean
+update_sdc_clocks
+view_cells
+update_ok
+vars
+run_test
+preview_macro_placement
+merged.lib
+skip_place
+do-synth-report
+do-generate-abstract
+do-cts
+do-finish
+do-floorplan
+do-place
+do-5_route
+.phony
+do-6_1_fill
+do-3_1_place_gp_skip_io
+update_metadata
+do-gds
+do-3_3_place_gp
+do-5_3_route
+update_rules
+do-3_place.sdc
+d0-5_route.sdc
+do-5_1_grt
+do-3_2_place_top
+drc.json
+do-3_place
+do-6_1_fill.sdc
+do-6_final.sdc
+do-2_floorplan
+do-klayout_tech
+.SUFFIXES
 skip_cts
-skip_route
-skip_resize
-ln -sf $(shell realpath --relative-to=$(dir $@) $<) $@
-all
+metadata
+gui_$(1): gui_$(2)
+open_$(1): open_$(2)
+gui_$(2)
+$(1)_$(2):
+$(call KLAYOUT_FOUND)
+($(TIME_CMD) $(STDBUF_CMD) $(KLAYOUT_CMD) -zz -rd design_name=$(DESIGN_NAME) -rd in_def=$(RESULTS_DIR)/6_final.def -rd in_files="$(GDSOAS_FILES) $(WRAPPED_GDSOAS)" -rd config_file=$(FILL_CONFIG) -rd seal_file="$(SEAL_GDSOAS)" -rd out_file=$(GDS_MERGED_FILE) -rd tech_file=$(OBJECTS_DIR)/klayout.lyt -rd layer_map=$(GDS_LAYER_MAP) -r $(UTILS_DIR)/def2stream.py) 2>&1 | tee $(LOG_DIR)/6_1_merge.log
+($(TIME_CMD) $(KLAYOUT_CMD) -zz -rd in_gds="$<" -rd report_file=$(abspath $@) -r $(KLAYOUT_DRC_FILE)) 2>&1 | tee $(LOG_DIR)/6_drc.log
+($(TIME_CMD) $(KLAYOUT_CMD) -b -rd in_gds="$<" -rd cdl_file=$(abspath $(OBJECTS_DIR)/6_final_concat.cdl) -rd report_file=$(abspath $@) -r $(KLAYOUT_LVS_FILE)) 2>&1 | tee $(LOG_DIR)/6_lvs.log
+$(UTILS_DIR)/markDontUse.py -p "$(DONT_USE_CELLS)" -i $^ -o $@
