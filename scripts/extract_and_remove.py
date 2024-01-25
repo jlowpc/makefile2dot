@@ -14,38 +14,47 @@ def extract_and_remove(**kwargs):
     cmd_dict = {}
     next_list = []
     tree_dict = defaultdict(list)
+    remove_dict = {}
+    remove_dict[name] = 1
     
     extract_graph = pydot.Dot(name, graph_type='digraph', strict=True) 
     remove_graph = pydot.Dot(name, graph_type='digraph', strict=True) 
-
-    for node in graph.get_nodes():
-        s1 = node.get_name()
-        if (s1==name):
-            extract_graph.add_node(node)
-        else:
-            remove_graph.add_node(node)
 
     for edge in graph.get_edges():
         s1 = edge.get_source()
         s2 = edge.get_destination()
         tree_dict[s1].append(s2)
+        name1 = re.findall('"([^"]*)"', str(s1))
+        name2 = re.findall('"([^"]*)"', str(s2))
+        if ((len(name1)>0 and name==name1[0])):
+            remove_dict[name2[0]] = 1
+        if ((len(name2)>0 and name==name2[0])):
+            remove_dict[name1[0]] = 1
 
-    for item in tree_dict[key]:
-       next_list.append(item)
-    while (len(next_list) > 0):
-        item = next_list.pop()
-        
-        n1 = graph.get_node(item)[0]
-        n2 = graph.get_node(key)[0]
-        e = pydot.Edge(key, item)
-        if (name==n1):
-            extract_graph.add_node(n1) 
-            extract_graph.add_node(n2)
-            extract_graph.add_edge(e)
+    for node in graph.get_nodes():
+        s1 = node.get_name()
+        if (s1.replace('"', '') in remove_dict):
+            extract_graph.add_node(node)
         else:
-            remove_graph.add_node(n1) 
-            remove_graph.add_node(n2)
-            remove_graph.add_edge(e)
+            remove_graph.add_node(node)
+
+    for key, next_list in tree_dict.items():
+        while (len(next_list) > 0):
+            item = next_list.pop()
+        
+            n1 = graph.get_node(item)[0]
+            n2 = graph.get_node(key)[0]
+            e = pydot.Edge(key, item)
+            name1 = re.findall('"([^"]*)"', str(n1))
+            name2 = re.findall('"([^"]*)"', str(n2))
+            if ((len(name1)>0 and name==name1[0]) or (len(name2)>0 and name==name2[0])):
+                extract_graph.add_node(n1) 
+                extract_graph.add_node(n2)
+                extract_graph.add_edge(e)
+            else:
+                remove_graph.add_node(n1) 
+                remove_graph.add_node(n2)
+                remove_graph.add_edge(e)
 
     with open(extract, 'w') as file:
         file.write(str(extract_graph))
@@ -62,17 +71,16 @@ import argparse
 DESC = "Extract a section of dot graph and remove it from the original graph."
 PARSER = argparse.ArgumentParser(description=DESC)
 PARSER.add_argument(dest='input', help="input DOT file")
+PARSER.add_argument('--extract', '-e', dest='extract', help="extract graph output file name.")
+PARSER.add_argument('--remove', '-r', dest='remove', help="remove graph output file name.")
+PARSER.add_argument('--name', '-n', dest='name', help='The node name to extract')
+
 PARSER.add_argument('--direction', '-d', dest='direction', default="BT",
                             help="direction to draw graph ('BT', 'TB', 'LR', or 'RL')")
-
-PARSER.add_argument('--extract', '-e', dest='extract', help="extract graph output file name.")
-
-PARSER.add_argument('--remove', '-r', dest='remove', help="remove graph output file name.")
-
 PARSER.add_argument('--view', '-v', action='store_true',
                             help="view the graph (disables output to stdout)")
 
-PARSER.add_argument('--name', '-n', dest='name', help='The node name to extract')
+
 
 ARGS = PARSER.parse_args()
 
