@@ -17,8 +17,10 @@ def extract_and_remove(**kwargs):
     remove_dict = {}
     remove_dict[name] = 1
     
-    extract_graph = pydot.Dot(name, graph_type='digraph', strict=True) 
-    remove_graph = pydot.Dot(name, graph_type='digraph', strict=True) 
+    extract_graph = pydot.Dot(extract, graph_type='digraph', strict=True) 
+    remove_graph = pydot.Dot(remove, graph_type='digraph', strict=True) 
+    extract_graph_added = {}
+    remove_graph_added = {}
 
     for edge in graph.get_edges():
         s1 = edge.get_source()
@@ -31,12 +33,12 @@ def extract_and_remove(**kwargs):
         if ((len(name2)>0 and name==name2[0])):
             remove_dict[name1[0]] = 1
 
-    for node in graph.get_nodes():
-        s1 = node.get_name()
-        if (s1.replace('"', '') in remove_dict):
-            extract_graph.add_node(node)
-        else:
-            remove_graph.add_node(node)
+    #for node in graph.get_nodes():
+    #    s1 = node.get_name()
+    #    if (s1.replace('"', '') in remove_dict):
+    #        extract_graph.add_node(node)
+    #    else:
+    #        remove_graph.add_node(node)
 
     for key, next_list in tree_dict.items():
         while (len(next_list) > 0):
@@ -48,12 +50,20 @@ def extract_and_remove(**kwargs):
             name1 = re.findall('"([^"]*)"', str(n1))
             name2 = re.findall('"([^"]*)"', str(n2))
             if ((len(name1)>0 and name==name1[0]) or (len(name2)>0 and name==name2[0])):
-                extract_graph.add_node(n1) 
-                extract_graph.add_node(n2)
+                if str(n1) not in extract_graph_added:
+                    extract_graph.add_node(n1) 
+                    extract_graph_added[str(n1)] = 1
+                if str(n2) not in extract_graph_added:
+                    extract_graph.add_node(n2)
+                    extract_graph_added[str(n2)] = 1
                 extract_graph.add_edge(e)
             else:
-                remove_graph.add_node(n1) 
-                remove_graph.add_node(n2)
+                if str(n1) not in remove_graph_added:
+                    remove_graph.add_node(n1) 
+                    remove_graph_added[str(n1)] = 1
+                if str(n2) not in remove_graph_added:
+                    remove_graph.add_node(n2)
+                    remove_graph_added[str(n2)] = 1
                 remove_graph.add_edge(e)
 
     with open(extract, 'w') as file:
