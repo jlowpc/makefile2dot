@@ -12,7 +12,6 @@ setup(
     version='1.0.5',
     author='Chad Gilbert',
     author_email='chad.s.gilbert@gmail.com',
-    supporter_email = 'confusus@gmail.com',
     description='Create a graphviz graph of a Makefile.',
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
