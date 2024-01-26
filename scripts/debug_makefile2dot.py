@@ -14,6 +14,10 @@ def is_skip_line(line, skip_line_list):
         if (re.search(sline, line)): return True
     return False
 
+def is_potentially_a_file(name):
+    if is_filename(name): return True
+    return name.endswith(('tcl', 'py', 'v', 'odb', 'sdc', 'txt', 'cdl', 'def', 'lvsdb', 'log', 'gds'))
+
 def is_filename(name):
     res = bool(re.search(r"\s", name))
     if res: return False
@@ -111,8 +115,8 @@ def build_graph(stream, **kwargs):
     """
     Build a dependency graph from the Makefile database.
     """
-    tool_fillcolor = "aliceblue"
-    file_fillcolor = "darkseagreen"
+    file_fillcolor = "aliceblue"
+    tool_fillcolor= "darkseagreen"
     bigtool_fillcolor2 = "orangered"
     bigtool = ['yosys', 'drc', 'lvs']
     unique_fn_dict = {}
@@ -153,26 +157,43 @@ def build_graph(stream, **kwargs):
                 target, dependencies = tuple(list_token)
                 if dependencies == "":
                     dependencies = None
+            is_target_a_filename = is_potentially_a_file(target)
             target = shorten_filename(target, unique_fn_dict)
             # Draw all targets except .PHONY (it isn't really a target).
             if target != ".PHONY":
                 label = get_label(add_table_dict, target) 
                 if target in bigtool:
                     graph.node(target, shape="box", fillcolor=bigtool_fillcolor2, style="filled, rounded", label=label)
+                elif is_target_a_filename:
+                    if target.endswith(('tcl','py')):    
+                        graph.node(target, shape="box", fillcolor=tool_fillcolor, style="filled, rounded", label=label)
+                    else:
+                        graph.node(target, shape="box", fillcolor=file_fillcolor, style="filled, rounded", label=label)
                 else:
                     graph.node(target)
             if dependencies is not None:
                 for dependency in dependencies.strip().split(' '):
+                    is_dependency_a_filename = is_potentially_a_file(dependency)
                     dependency = shorten_filename(dependency, unique_fn_dict)
                     if dependency in ["default", "clean"]:
                         continue
                     elif target == ".PHONY":
-                        graph.node(dependency, shape="circle")
+                        #graph.node(dependency, shape="circle")
+                        continue
                     elif target in ["default"]:
                         graph.node(dependency, shape="rectangle")
                     else:
                         label = get_label(add_table_dict, dependency) 
-                        graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled", label=label)
+                        if dependency in bigtool:
+                            graph.node(dependency, shape="box", fillcolor=bigtool_fillcolor2, style="filled, rounded", label=label)
+                        elif is_dependency_a_filename:
+                            if dependency.endswith(('tcl','py')):    
+                                graph.node(dependency, shape="box", fillcolor=tool_fillcolor, style="filled, rounded", label=label)
+                            else:
+                                graph.node(dependency, shape="box", fillcolor=file_fillcolor, style="filled, rounded", label=label)
+                        else:
+                            graph.node(dependency)
+                            # graph.node(dependency, shape="rectangle", fillcolor=tool_fillcolor, style="filled", label=label)
                         graph.edge(dependency, target)
         elif target != '': # Tab   
             line = line.replace(":", "-")
@@ -185,10 +206,16 @@ def build_graph(stream, **kwargs):
             if line in replace_dict:
                 line = replace_dict[line]
             label = get_label(add_table_dict, line) 
+            is_line_a_filename = is_potentially_a_file(line)
             if line in bigtool:
                 graph.node(line, shape="box", fillcolor=bigtool_fillcolor2, style="filled, rounded", label=label)
+            elif is_line_a_filename:
+                if line.endswith(('tcl','py')):    
+                    graph.node(line, shape="box", fillcolor=tool_fillcolor, style="filled, rounded", label=label)
+                else:
+                    graph.node(line, shape="box", fillcolor=file_fillcolor, style="filled, rounded", label=label)
             else:
-                graph.node(line, shape="box", fillcolor=file_fillcolor, style="filled, rounded", label=label)
+                 graph.node(line)
             graph.edge(line, target)            
     if map_fn is not None and len(unique_fn_dict)>0:
         write_map(map_fn, unique_fn_dict)

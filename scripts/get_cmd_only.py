@@ -13,6 +13,7 @@ def create_cmd_only(**kwargs):
     cmd_dict = {}
     next_list = []
     tree_dict = defaultdict(list)
+    graph_added = {}
     
     cmd_graph = pydot.Dot('Command map', graph_type='digraph', strict=True) 
     cmd_graph.set_node_defaults(style='rounded')
@@ -42,8 +43,12 @@ def create_cmd_only(**kwargs):
                 #nn1 = pydot.Node(name=item, **(n1.get_attributes()))
                 #nn2 = pydot.Node(name=key, **(n2.get_attributes()))
                 e = pydot.Edge(key, item)
-                cmd_graph.add_node(n1) 
-                cmd_graph.add_node(n2)
+                if str(n1) not in graph_added:
+                    cmd_graph.add_node(n1) 
+                    graph_added[str(n1)] = 1
+                if str(n2) not in graph_added:
+                    cmd_graph.add_node(n2)
+                    graph_added[str(n2)] = 1
                 cmd_graph.add_edge(e)
             else: 
                 if item not in already_done:
