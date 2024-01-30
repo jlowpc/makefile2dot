@@ -69,3 +69,21 @@ $(UNSET_AND_MAKE) do-2_3_floorplan_tdms ===do-2_3_floorplan_tdms
 $(UNSET_AND_MAKE) do-2_1_floorplan ===do-2_1_floorplan
 $(UNSET_AND_MAKE) do-2_2_floorplan_io ===do-2_2_floorplan_io
 $(UNSET_AND_MAKE) do-generate_abstract ===do-generate_abstract
+ODB_FILE=./results/sky130hd/gcd/base/5_2_fillcell.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/5_2_fillcell.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/5_3_route.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/6_1_fill.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/6_1_fill.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+$(UNSET_AND_MAKE) do-5_3_route ===do-5_3_route
+DEF_FILE=./results/sky130hd/gcd/base/6_final.def /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/4_1_cts.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+DEF_FILE=./results/sky130hd/gcd/base/6_final.def /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/5_1_grt.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/5_1_grt.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -no_init  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/5_3_route.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+ODB_FILE=./results/sky130hd/gcd/base/4_1_cts.odb /home/joanne/LOCAL/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/openroad -gui  /home/joanne/LOCAL/OpenROAD-flow-scripts/flow/scripts/gui.tcl ===openroad gui.tcl
+$(UNSET_AND_MAKE) do-2_floorplan_debug_macros ===do-2_floorplan_debug_macros
+$(UNSET_AND_MAKE) do-2_floorplan ===do-2_floorplan
+$(OPENROAD_NO_EXIT_CMD) $(SCRIPTS_DIR)/sta-synth.tcl ===sta-synth.tcl
+$(OPENROAD_GUI_CMD) $(SCRIPTS_DIR)/sta-synth.tcl ===sta-synth.tcl
+$(UNSET_AND_MAKE) do-synth-report ===do-synth-report

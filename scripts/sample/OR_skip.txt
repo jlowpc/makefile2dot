@@ -66,8 +66,6 @@ clean_synth
 clean_cts
 clean_route
 update_ok
-open_synth
-gui_synth
 elapsed
 correlate_platform_rc
 command
@@ -86,7 +84,6 @@ run_test
 preview_macro_placement
 merged.lib
 skip_place
-do-synth-report
 do-generate-abstract
 do-cts
 do-finish
@@ -99,7 +96,6 @@ do-3_1_place_gp_skip_io
 update_metadata
 do-gds
 do-3_3_place_gp
-do-5_3_route
 update_rules
 do-3_place.sdc
 d0-5_route.sdc
@@ -109,7 +105,6 @@ drc.json
 do-3_place
 do-6_1_fill.sdc
 do-6_final.sdc
-do-2_floorplan
 do-klayout_tech
 .SUFFIXES
 skip_cts
