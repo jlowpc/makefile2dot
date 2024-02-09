@@ -92,14 +92,11 @@ do-place
 do-5_route
 .phony
 do-6_1_fill
-do-3_1_place_gp_skip_io
 update_metadata
 do-gds
-do-3_3_place_gp
 update_rules
 do-3_place.sdc
 d0-5_route.sdc
-do-5_1_grt
 do-3_2_place_top
 drc.json
 do-3_place

@@ -10,54 +10,48 @@ def create_cmd_only(**kwargs):
     graphs = pydot.graph_from_dot_file(kwargs.get('input'))
     graph = graphs[0]
 
+    tool_fillcolor = "darkseagreen"
+    file_fillcolor = "aliceblue"
+    bigtool_fillcolor2 = "orangered"
     cmd_dict = {}
-    next_list = []
-    tree_dict = defaultdict(list)
+    node_dict = {}
     graph_added = {}
+    methods = ['do-yosys', 'do-synth-report', 'do-2_floorplan_debug_macros', 'do-2_1_floorplan', 'do-2_2_floorplan_io', 'do-2_3_floorplan_tdms', 'do-2_4_floorplan_macro', 
+    'do-2_5_floorplan_tapcell', 'do-2_6_floorplan_pdn', 'do-3_1_place_gp_skip_io', 'do-3_2_place_iop', 'do-3_3_place_gp', 
+    'do-3_4_place_resized', 'do-3_5_place_dp', 'do-4_1_cts', 'do-generate_abstract', 'do-5_1_grt', 'do-5_2_fillcell', 'do-5_3_route', 
+    'do-6_report']
     
-    cmd_graph = pydot.Dot('Command map', graph_type='digraph', strict=True) 
-    cmd_graph.set_node_defaults(style='rounded')
-    cmd_graph.set_edge_defaults(minlen='2')
-
-    for node in graph.get_nodes():
-        s1 = node.get_name()
-        attr = node.get_attributes()
-        if 'fillcolor' in attr:
-            if attr['fillcolor'] == 'darkseagreen' or attr['fillcolor'] == 'orangered':
-                cmd_dict[s1] = 1
+    cmd_graph = gv.Digraph(comment="Map of filename", node_attr={'style': 'rounded'}, edge_attr={'minlen' : '2'}, strict=True)
+    # cmd_graph = pydot.Dot('Command map', graph_type='digraph', strict=True) 
+    #cmd_graph.set_node_defaults(style='rounded')
+    #cmd_graph.set_edge_defaults(minlen='2')
 
     for edge in graph.get_edges():
-        s1 = edge.get_source()
-        s2 = edge.get_destination()
-        tree_dict[s1].append(s2)
-
-    for key, values in cmd_dict.items():
-        already_done = {}
-        for item in tree_dict[key]:
-            next_list.append(item)
-        while (len(next_list) > 0):
-            item = next_list.pop()
-            if item in cmd_dict:
-                n1 = graph.get_node(item)[0]
-                n2 = graph.get_node(key)[0]
-                #nn1 = pydot.Node(name=item, **(n1.get_attributes()))
-                #nn2 = pydot.Node(name=key, **(n2.get_attributes()))
-                e = pydot.Edge(key, item)
-                if str(n1) not in graph_added:
-                    cmd_graph.add_node(n1) 
-                    graph_added[str(n1)] = 1
-                if str(n2) not in graph_added:
-                    cmd_graph.add_node(n2)
-                    graph_added[str(n2)] = 1
-                cmd_graph.add_edge(e)
-            else: 
-                if item not in already_done:
-                    next_list.append(item)
-                already_done[item] = 1
-                for item2 in tree_dict[item]:
-                    if item2 not in already_done:
-                        next_list.append(item2)
-                    already_done[item2] = 1
+        s = edge.get_source()
+        d = edge.get_destination()
+        s1 = re.findall('"([^"]*)"', str(s))
+        d1 = re.findall('"([^"]*)"', str(d))
+        if len(s1)>0 and len(d1) > 0:
+            if re.match(r'do.*', d1[0]):
+                #cmd_graph.add_node(n1) 
+                #cmd_graph.add_node(n2)
+                ss = str(s).replace("\"","")
+                dd = str(d).replace("\"","")
+                n1 = cmd_graph.node(ss, shape="box", fillcolor=tool_fillcolor, style="filled, rounded")
+                n2 = cmd_graph.node(dd)
+                cmd_graph.edge(ss, dd)
+                idx = methods.index(d1[0])
+                if (idx>0):
+                    n1 = cmd_graph.node(methods[idx-1])
+                    #n2 = cmd_graph.node(d1[0], shape="box")
+                    # , shape="box", fillcolor=tool_fillcolor, style="filled, rounded"
+                    #n1 = pydot.Node(, style="filled, rounded")
+                    #n2 = pydot.Node(, fillcolor=tool_fillcolor, style="filled, rounded")
+                    #e = pydot.Edge(n1, n2)
+                    cmd_graph.edge(methods[idx-1], dd)
+                #print(f"s: {s1[0]} -> {d1[0]}")
+                #cmd_graph.edge('do-yosys', 'do-2_1_floorplan')
+                #cmd_graph.add_edge(pydot.Edge(node_foo, node_bar, ltail=cluster_foo.get_name(), lhead=cluster_bar.get_name()))
     if output == "":
         if view:
             cmd_graph.view()
